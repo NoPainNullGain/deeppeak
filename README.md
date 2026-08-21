@@ -31,8 +31,16 @@ Download the `.vsix` artifact from the repository's Actions run, then install it
 ```text
 code --install-extension deeppeak-0.0.1.vsix
 ```
+Install
+1. Download  deeppeak-0.0.1.vsix .
+2. In VS Code, open Extensions → ... → Install from VSIX...
+3. Select the downloaded  .vsix  file and reload VS Code.
 
-You can also use **Extensions: Install from VSIX...** from the VS Code Command Palette.
+Set you API Key
+1. In VS Code, press Ctrl+Shift+P.
+2. Search for DeepPeak: Set DeepSeek API Key.
+3. Select it and enter your DeepSeek key ( sk-... ).
+4. Press Enter.
 
 Change `deeppeak.refreshIntervalSeconds` in VS Code settings to adjust polling. Values below 30 seconds are clamped to 30 seconds.
 
