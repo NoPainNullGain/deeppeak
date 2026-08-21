@@ -1,0 +1,58 @@
+{
+  "name": "deeppeak",
+  "displayName": "DeepPeak",
+  "description": "A lightweight VS Code widget for DeepSeek API balance and peak pricing.",
+  "version": "0.0.1",
+  "publisher": "NoPainNullGain",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NoPainNullGain/deeppeak.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NoPainNullGain/deeppeak/issues"
+  },
+  "homepage": "https://github.com/NoPainNullGain/deeppeak#readme",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "deeppeak.setApiKey",
+        "title": "DeepPeak: Set DeepSeek API Key"
+      },
+      {
+        "command": "deeppeak.refresh",
+        "title": "DeepPeak: Refresh Balance"
+      }
+    ],
+    "configuration": {
+      "title": "DeepPeak",
+      "properties": {
+        "deeppeak.refreshIntervalSeconds": {
+          "type": "number",
+          "default": 60,
+          "minimum": 30,
+          "description": "How often to refresh the DeepSeek balance in seconds. The minimum is 30 seconds."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.7.2"
+  }
+}
