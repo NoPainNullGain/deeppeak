@@ -1,0 +1,10 @@
+.vscode/**
+.git/**
+.github/**
+node_modules/**
+src/**
+tsconfig.json
+package-lock.json
+**/*.map
+.gitignore
+CONTRIBUTING.md

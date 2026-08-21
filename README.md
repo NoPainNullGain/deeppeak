@@ -20,9 +20,19 @@ The status bar shows only a heartbeat icon and the current pricing state. Hover 
 1. Open this folder in VS Code.
 2. Run `npm install`.
 3. Run `npm run compile`.
-4. Press `F5` to launch an Extension Development Host.
+4. Press `F5` to launch an Extension Development Host, or run `npm run package` to create an installable `.vsix`.
 5. Run **DeepPeak: Set DeepSeek API Key** from the Command Palette.
 6. Hover over the DeepPeak status item.
+
+## Installing the packaged extension
+
+Download the `.vsix` artifact from the repository's Actions run, then install it with:
+
+```text
+code --install-extension deeppeak-0.0.1.vsix
+```
+
+You can also use **Extensions: Install from VSIX...** from the VS Code Command Palette.
 
 Change `deeppeak.refreshIntervalSeconds` in VS Code settings to adjust polling. Values below 30 seconds are clamped to 30 seconds.
 
