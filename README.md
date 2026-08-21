@@ -27,17 +27,27 @@ The status bar shows only a heartbeat icon and the current pricing state. Hover 
 
 ## Installing the packaged extension
 
-Download the `.vsix` artifact from the repository's Actions run, then install it with:
+Download the latest `.vsix` from the [releases page](https://github.com/NoPainNullGain/deeppeak/releases), then:
 
-```text
+1. In VS Code, open **Extensions**.
+2. Open the `...` menu and choose **Install from VSIX...**.
+3. Select the downloaded `.vsix` file and reload VS Code.
+
+Alternatively, install from a terminal:
+
+```bash
 code --install-extension deeppeak-0.0.2.vsix
 ```
-
-You can also use **Extensions: Install from VSIX...** from the VS Code Command Palette.
 
 Change `deeppeak.refreshIntervalSeconds` in VS Code settings to adjust polling. Values below 30 seconds are clamped to 30 seconds.
 
 Set `deeppeak.model` to the model used by your API client so the hover popup displays the correct rate card. DeepPeak reads the balance endpoint only and cannot infer which model another client is using.
+
+To set the API key:
+
+1. Press `Ctrl+Shift+P`.
+2. Run **DeepPeak: Set DeepSeek API Key**.
+3. Enter your DeepSeek key.
 
 DeepSeek peak pricing is treated as **01:00-04:00 UTC** and **06:00-10:00 UTC**. All other hours are off-peak.
 
