@@ -2,7 +2,7 @@
   "name": "deeppeak",
   "displayName": "DeepPeak",
   "description": "A lightweight VS Code widget for DeepSeek API balance and peak pricing.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "NoPainNullGain",
   "license": "MIT",
   "repository": {
@@ -42,6 +42,21 @@
           "default": 60,
           "minimum": 30,
           "description": "How often to refresh the DeepSeek balance in seconds. The minimum is 30 seconds."
+        },
+        "deeppeak.model": {
+          "type": "string",
+          "enum": [
+            "deepseek-v4-flash",
+            "deepseek-v4-pro",
+            "deepseek-v4-flash-vision-exp"
+          ],
+          "enumDescriptions": [
+            "DeepSeek V4 Flash",
+            "DeepSeek V4 Pro",
+            "DeepSeek V4 Flash Vision Experimental"
+          ],
+          "default": "deepseek-v4-flash",
+          "description": "The DeepSeek model whose pricing should be shown. This does not change the model used by other clients."
         }
       }
     }

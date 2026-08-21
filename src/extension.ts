@@ -28,14 +28,26 @@ const US_TIME_ZONE_PREFIXES = [
 type Balance = {
   currency: string;
   total: number;
-  granted: number;
-  toppedUp: number;
 };
 
 type WidgetState = {
   balance?: Balance;
   error?: string;
   loading: boolean;
+};
+
+type ModelId = 'deepseek-v4-flash' | 'deepseek-v4-pro' | 'deepseek-v4-flash-vision-exp';
+
+type ModelPricing = {
+  inputCacheHit: number;
+  inputCacheMiss: number;
+  output: number;
+};
+
+const MODEL_PRICING: Record<ModelId, ModelPricing> = {
+  'deepseek-v4-flash': { inputCacheHit: 0.007, inputCacheMiss: 0.22, output: 0.66 },
+  'deepseek-v4-pro': { inputCacheHit: 0.022, inputCacheMiss: 0.66, output: 1.98 },
+  'deepseek-v4-flash-vision-exp': { inputCacheHit: 0.007, inputCacheMiss: 0.22, output: 0.66 }
 };
 
 type PricingPeriod = {
@@ -155,12 +167,18 @@ function updateStatusBar(): void {
   tooltip.appendMarkdown('**DeepPeak**\n\n');
   if (balance) {
     tooltip.appendText(`${formatMoney(balance.total, balance.currency)} available`);
-    tooltip.appendText(`\nGranted: ${formatMoney(balance.granted, balance.currency)}`);
-    tooltip.appendText(`\nTopped up: ${formatMoney(balance.toppedUp, balance.currency)}`);
   } else {
     tooltip.appendText(state.loading ? 'Loading balance...' : state.error ?? 'No balance available');
   }
+  const model = getConfiguredModel();
+  const pricing = MODEL_PRICING[model];
+  const inputCacheHit = formatRate(period.isPeak ? pricing.inputCacheHit * 2 : pricing.inputCacheHit);
+  const inputCacheMiss = formatRate(period.isPeak ? pricing.inputCacheMiss * 2 : pricing.inputCacheMiss);
+  const output = formatRate(period.isPeak ? pricing.output * 2 : pricing.output);
   tooltip.appendText(`\n\n${period.name} pricing`);
+  tooltip.appendText(`\nModel: ${model}`);
+  tooltip.appendText(`\nInput: ${inputCacheMiss}/1M (cache miss), ${inputCacheHit}/1M (cache hit)`);
+  tooltip.appendText(`\nOutput: ${output}/1M tokens`);
   tooltip.appendText(`\nLocal time: ${formatLocalTime(new Date())}`);
   tooltip.appendText(`\nNext change: ${formatLocalTime(period.nextChange)}`);
   tooltip.appendText(`\nTimezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
@@ -220,13 +238,11 @@ function parseBalance(value: unknown): Balance {
   }
 
   const total = numberValue(info.total_balance);
-  const granted = numberValue(info.granted_balance);
-  const toppedUp = numberValue(info.topped_up_balance);
-  if (total === undefined || granted === undefined || toppedUp === undefined) {
+  if (total === undefined) {
     throw new Error('DeepSeek returned an invalid balance amount.');
   }
 
-  return { currency: info.currency, total, granted, toppedUp };
+  return { currency: info.currency, total };
 }
 
 function numberValue(value: unknown): number | undefined {
@@ -250,4 +266,24 @@ function formatMoney(amount: number, currency: string): string {
     currency,
     maximumFractionDigits: 2
   }).format(amount);
+}
+
+function formatRate(amount: number): string {
+  return new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3
+  }).format(amount);
+}
+
+function getConfiguredModel(): ModelId {
+  const configured = vscode.workspace
+    .getConfiguration('deeppeak')
+    .get<string>('model', 'deepseek-v4-flash');
+  return isModelId(configured) ? configured : 'deepseek-v4-flash';
+}
+
+function isModelId(value: string): value is ModelId {
+  return value in MODEL_PRICING;
 }
