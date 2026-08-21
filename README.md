@@ -46,6 +46,12 @@ code --install-extension deeppeak-0.0.1.vsix
 
 Change `deeppeak.refreshIntervalSeconds` in VS Code settings to adjust polling. Values below 30 seconds are clamped to 30 seconds.
 
+Set it in VS Code:
+1. Open Settings with  Ctrl+, .
+2. Search for DeepPeak refresh interval.
+3. Set DeepPeak: Refresh Interval Seconds.
+
+
 DeepSeek peak pricing is treated as **01:00-04:00 UTC** and **06:00-10:00 UTC**. All other hours are off-peak.
 
 ## Open-source checklist
