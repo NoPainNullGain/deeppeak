@@ -36,7 +36,7 @@ Download the latest `.vsix` from the [releases page](https://github.com/NoPainNu
 Alternatively, install from a terminal:
 
 ```bash
-code --install-extension deeppeak-0.0.2.vsix
+code --install-extension deeppeak-0.0.3.vsix
 ```
 
 Change `deeppeak.refreshIntervalSeconds` in VS Code settings to adjust polling. Values below 30 seconds are clamped to 30 seconds.
