@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 
 const API_KEY_SECRET = 'deeppeak.deepseekApiKey';
 const BALANCE_URL = 'https://api.deepseek.com/user/balance';
+const WEEKEND_PRICING_EFFECTIVE_AT = Date.UTC(2026, 7, 22, 16);
+const BEIJING_UTC_OFFSET_MS = 8 * 60 * 60 * 1_000;
 const US_TIME_ZONE_PREFIXES = [
   'America/Adak',
   'America/Anchorage',
@@ -57,6 +59,8 @@ type PricingPeriod = {
   nextChange: Date;
 };
 
+type SettingsOption = 'apiKey' | 'refreshIntervalSeconds' | 'model';
+
 let state: WidgetState = { loading: true };
 let statusBarItem: vscode.StatusBarItem;
 let refreshTimer: vscode.Disposable | undefined;
@@ -71,9 +75,14 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.commands.registerCommand('deeppeak.setApiKey', () => setApiKey(context)),
     vscode.commands.registerCommand('deeppeak.refresh', () => refresh(context)),
+    vscode.commands.registerCommand('deeppeak.openSettings', () => openSettings(context)),
     vscode.workspace.onDidChangeConfiguration(event => {
       if (event.affectsConfiguration('deeppeak.refreshIntervalSeconds')) {
         startRefreshTimer(context);
+      }
+      if (event.affectsConfiguration('deeppeak.refreshIntervalSeconds') ||
+          event.affectsConfiguration('deeppeak.model')) {
+        updateStatusBar();
       }
     })
   );
@@ -158,6 +167,98 @@ async function setApiKey(context: vscode.ExtensionContext): Promise<void> {
   await refresh(context);
 }
 
+async function openSettings(context: vscode.ExtensionContext): Promise<void> {
+  const option = await vscode.window.showQuickPick<{
+    label: string;
+    description: string;
+    value: SettingsOption;
+  }>([
+    {
+      label: '$(key) Set API key',
+      description: 'Update the DeepSeek API key',
+      value: 'apiKey'
+    },
+    {
+      label: '$(sync) Change update interval',
+      description: `Currently every ${getRefreshIntervalSeconds()} seconds`,
+      value: 'refreshIntervalSeconds'
+    },
+    {
+      label: '$(symbol-enum) Pick model',
+      description: `Currently ${getConfiguredModel()}`,
+      value: 'model'
+    }
+  ], {
+    placeHolder: 'DeepPeak options'
+  });
+
+  if (!option) {
+    return;
+  }
+
+  if (option.value === 'apiKey') {
+    await setApiKey(context);
+    return;
+  }
+
+  if (option.value === 'refreshIntervalSeconds') {
+    await changeRefreshInterval();
+    return;
+  }
+
+  await pickModel();
+}
+
+async function changeRefreshInterval(): Promise<void> {
+  const current = getRefreshIntervalSeconds();
+  const value = await vscode.window.showInputBox({
+    prompt: 'Update interval in seconds',
+    value: String(current),
+    validateInput: input => {
+      const seconds = Number(input);
+      return Number.isInteger(seconds) && seconds >= 30
+        ? undefined
+        : 'Enter a whole number of at least 30 seconds.';
+    }
+  });
+
+  if (value === undefined) {
+    return;
+  }
+
+  await vscode.workspace.getConfiguration('deeppeak').update(
+    'refreshIntervalSeconds',
+    Number(value),
+    vscode.ConfigurationTarget.Global
+  );
+}
+
+async function pickModel(): Promise<void> {
+  const option = await vscode.window.showQuickPick<{
+    label: string;
+    model: ModelId;
+  }>(
+    (Object.keys(MODEL_PRICING) as ModelId[]).map(model => ({
+      label: model,
+      model
+    })),
+    {
+      placeHolder: 'Select the model whose pricing should be shown',
+      canPickMany: false
+    }
+  );
+
+  if (!option) {
+    return;
+  }
+
+  await vscode.workspace.getConfiguration('deeppeak').update(
+    'model',
+    option.model,
+    vscode.ConfigurationTarget.Global
+  );
+}
+
 function updateStatusBar(): void {
   const period = getPricingPeriod();
   const balance = state.balance;
@@ -183,7 +284,8 @@ function updateStatusBar(): void {
   tooltip.appendText(`\nNext change: ${formatLocalTime(period.nextChange)}`);
   tooltip.appendText(`\nTimezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
   tooltip.appendText(`\nUpdates every ${getRefreshIntervalSeconds()} seconds`);
-  tooltip.isTrusted = false;
+  tooltip.appendMarkdown('\n\n[\u2699 Settings](command:deeppeak.openSettings)');
+  tooltip.isTrusted = { enabledCommands: ['deeppeak.openSettings'] };
   statusBarItem.tooltip = tooltip;
 }
 
@@ -205,8 +307,7 @@ function formatLocalTime(date: Date): string {
 }
 
 function getPricingPeriod(now = new Date()): PricingPeriod {
-  const hour = now.getUTCHours();
-  const isPeak = (hour >= 1 && hour < 4) || (hour >= 6 && hour < 10);
+  const isPeak = isPeakAt(now);
   const nextChange = new Date(now);
   nextChange.setUTCMinutes(0, 0, 0);
 
@@ -223,6 +324,13 @@ function getPricingPeriod(now = new Date()): PricingPeriod {
 }
 
 function isPeakAt(date: Date): boolean {
+  if (date.getTime() >= WEEKEND_PRICING_EFFECTIVE_AT) {
+    const beijingDay = new Date(date.getTime() + BEIJING_UTC_OFFSET_MS).getUTCDay();
+    if (beijingDay === 0 || beijingDay === 6) {
+      return false;
+    }
+  }
+
   const hour = date.getUTCHours();
   return (hour >= 1 && hour < 4) || (hour >= 6 && hour < 10);
 }

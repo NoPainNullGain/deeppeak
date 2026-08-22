@@ -49,7 +49,7 @@ To set the API key:
 2. Run **DeepPeak: Set DeepSeek API Key**.
 3. Enter your DeepSeek key.
 
-DeepSeek peak pricing is treated as **01:00-04:00 UTC** and **06:00-10:00 UTC**. All other hours are off-peak.
+DeepSeek peak pricing is treated as **01:00-04:00 UTC** and **06:00-10:00 UTC** on weekdays. All other hours are off-peak. Starting at **00:00 Beijing Time on August 23, 2026**, Saturdays and Sundays in Beijing Time are off-peak all day.
 
 ## Open-source checklist
 
