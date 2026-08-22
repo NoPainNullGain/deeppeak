@@ -32,6 +32,10 @@
       {
         "command": "deeppeak.refresh",
         "title": "DeepPeak: Refresh Balance"
+      },
+      {
+        "command": "deeppeak.openSettings",
+        "title": "DeepPeak: Open Settings"
       }
     ],
     "configuration": {
