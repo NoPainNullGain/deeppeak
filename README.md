@@ -14,7 +14,7 @@ The status bar shows only a heartbeat icon and the current pricing state. Hover 
 - Automatic balance refresh every 60 seconds
 - 24-hour time formatting outside US timezones
 - API key stored with VS Code SecretStorage
-- No telemetry and no API key in source code or UI
+- No telemetry; API keys are stored securely and never displayed
 
 ## Development
 

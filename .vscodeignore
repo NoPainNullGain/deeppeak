@@ -8,3 +8,5 @@ package-lock.json
 **/*.map
 .gitignore
 CONTRIBUTING.md
+DeepPeak.png
+reddit-post.md
